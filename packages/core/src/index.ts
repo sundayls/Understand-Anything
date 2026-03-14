@@ -43,3 +43,8 @@ export {
   type PluginConfig,
   type PluginEntry,
 } from "./plugins/discovery.js";
+export {
+  SemanticSearchEngine,
+  cosineSimilarity,
+  type SemanticSearchOptions,
+} from "./embedding-search.js";
