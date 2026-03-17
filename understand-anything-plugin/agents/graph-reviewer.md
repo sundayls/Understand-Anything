@@ -73,16 +73,19 @@ Verify every **edge** has ALL required fields with correct types:
 - No layer should have an empty `nodeIds` array
 - Log any file nodes missing from all layers, and any file nodes appearing in multiple layers
 
-**Check 5 -- Tour Validation (Warning)**
+**Check 5 -- Uniqueness (Critical)**
+
+- No duplicate node IDs. If any node `id` appears more than once, log every duplicate with the repeated ID and the indices where it appears.
+
+**Check 6 -- Tour Validation (Warning)**
 
 - Tour steps have sequential `order` values starting from 1
 - No duplicate `order` values
 - Each step has at least 1 entry in `nodeIds`
 - Tour has between 5 and 15 steps
 
-**Check 6 -- Quality Checks (Warning)**
+**Check 7 -- Quality Checks (Warning)**
 
-- No duplicate node IDs
 - No summaries that are empty or just restate the filename (e.g., summary equals the node name or just the filename portion of the path)
 - Edge weights are within 0.0-1.0 range
 - Node IDs follow prefix conventions: must start with `file:`, `func:`, `class:`, `module:`, or `concept:`
