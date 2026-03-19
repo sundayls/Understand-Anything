@@ -95,6 +95,56 @@ An interactive web dashboard opens with your codebase visualized as a graph — 
 
 ---
 
+## 🌐 Multi-Platform Installation
+
+Understand-Anything works across multiple AI coding platforms.
+
+### Claude Code (Native)
+
+```bash
+/plugin marketplace add Lum1104/Understand-Anything
+/plugin install understand-anything
+```
+
+### Codex
+
+Tell Codex:
+```
+Fetch and follow instructions from https://raw.githubusercontent.com/Lum1104/Understand-Anything/refs/heads/main/.codex/INSTALL.md
+```
+
+### OpenCode
+
+Add to your `opencode.json`:
+```json
+{
+  "plugin": ["understand-anything@git+https://github.com/Lum1104/Understand-Anything.git"]
+}
+```
+
+### OpenClaw
+
+Tell OpenClaw:
+```
+Fetch and follow instructions from https://raw.githubusercontent.com/Lum1104/Understand-Anything/refs/heads/main/.openclaw/INSTALL.md
+```
+
+### Cursor
+
+Cursor auto-discovers the plugin via `.cursor-plugin/plugin.json` when this repo is cloned. No manual installation needed — just clone and open in Cursor.
+
+### Platform Compatibility
+
+| Platform | Status | Install Method |
+|----------|--------|----------------|
+| Claude Code | ✅ Native | Plugin marketplace |
+| Codex | ✅ Supported | AI-driven install |
+| OpenCode | ✅ Supported | Plugin config |
+| OpenClaw | ✅ Supported | AI-driven install |
+| Cursor | ✅ Supported | Auto-discovery |
+
+---
+
 ## ✨ Features
 
 <p align="center">
@@ -209,6 +259,16 @@ Please open an issue first for major changes so we can discuss the approach.
 <p align="center">
   <strong>Stop reading code blind. Start understanding everything.</strong>
 </p>
+
+## Star History
+
+<a href="https://www.star-history.com/?repos=Lum1104%2FUnderstand-Anything&type=date&legend=top-left">
+ <picture>
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/image?repos=Lum1104/Understand-Anything&type=date&theme=dark&legend=top-left" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/image?repos=Lum1104/Understand-Anything&type=date&legend=top-left" />
+   <img alt="Star History Chart" src="https://api.star-history.com/image?repos=Lum1104/Understand-Anything&type=date&legend=top-left" />
+ </picture>
+</a>
 
 <p align="center">
   MIT License &copy; <a href="https://github.com/Lum1104">Lum1104</a>
