@@ -37,6 +37,9 @@ export interface CustomNodeData extends Record<string, unknown> {
   isDiffAffected: boolean;
   isDiffFaded: boolean;
   onNodeClick?: (nodeId: string) => void;
+  incomingCount?: number;
+  outgoingCount?: number;
+  tags?: string[];
 }
 
 export type CustomFlowNode = Node<CustomNodeData, "custom">;

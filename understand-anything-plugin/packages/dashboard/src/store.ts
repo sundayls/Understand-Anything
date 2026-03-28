@@ -5,8 +5,27 @@ import type {
   KnowledgeGraph,
   TourStep,
 } from "@understand-anything/core/types";
+import type { ReactFlowInstance } from "@xyflow/react";
 
 export type Persona = "non-technical" | "junior" | "experienced";
+export type NodeType = "file" | "function" | "class" | "module" | "concept";
+export type Complexity = "simple" | "moderate" | "complex";
+export type EdgeCategory = "structural" | "behavioral" | "data-flow" | "dependencies" | "semantic";
+
+export interface FilterState {
+  nodeTypes: Set<NodeType>;
+  complexities: Set<Complexity>;
+  layerIds: Set<string>;
+  edgeCategories: Set<EdgeCategory>;
+}
+
+export const EDGE_CATEGORY_MAP: Record<EdgeCategory, string[]> = {
+  structural: ["imports", "exports", "contains", "inherits", "implements"],
+  behavioral: ["calls", "subscribes", "publishes", "middleware"],
+  "data-flow": ["reads_from", "writes_to", "transforms", "validates"],
+  dependencies: ["depends_on", "tested_by", "configures"],
+  semantic: ["related", "similar_to"],
+};
 
 interface DashboardStore {
   graph: KnowledgeGraph | null;
@@ -32,6 +51,12 @@ interface DashboardStore {
   changedNodeIds: Set<string>;
   affectedNodeIds: Set<string>;
 
+  filters: FilterState;
+  filterPanelOpen: boolean;
+  exportMenuOpen: boolean;
+  pathFinderOpen: boolean;
+  reactFlowInstance: ReactFlowInstance | null;
+
   setGraph: (graph: KnowledgeGraph) => void;
   selectNode: (nodeId: string | null) => void;
   setSearchQuery: (query: string) => void;
@@ -43,6 +68,14 @@ interface DashboardStore {
   setDiffOverlay: (changed: string[], affected: string[]) => void;
   toggleDiffMode: () => void;
   clearDiffOverlay: () => void;
+
+  toggleFilterPanel: () => void;
+  toggleExportMenu: () => void;
+  togglePathFinder: () => void;
+  setReactFlowInstance: (instance: ReactFlowInstance | null) => void;
+  setFilters: (filters: Partial<FilterState>) => void;
+  resetFilters: () => void;
+  hasActiveFilters: () => boolean;
 
   startTour: () => void;
   stopTour: () => void;
@@ -78,6 +111,17 @@ export const useDashboardStore = create<DashboardStore>()((set, get) => ({
   diffMode: false,
   changedNodeIds: new Set<string>(),
   affectedNodeIds: new Set<string>(),
+
+  filters: {
+    nodeTypes: new Set<NodeType>(["file", "function", "class", "module", "concept"]),
+    complexities: new Set<Complexity>(["simple", "moderate", "complex"]),
+    layerIds: new Set<string>(),
+    edgeCategories: new Set<EdgeCategory>(["structural", "behavioral", "data-flow", "dependencies", "semantic"]),
+  },
+  filterPanelOpen: false,
+  exportMenuOpen: false,
+  pathFinderOpen: false,
+  reactFlowInstance: null,
 
   setGraph: (graph) => {
     const searchEngine = new SearchEngine(graph.nodes);
@@ -123,6 +167,49 @@ export const useDashboardStore = create<DashboardStore>()((set, get) => ({
       changedNodeIds: new Set<string>(),
       affectedNodeIds: new Set<string>(),
     }),
+
+  toggleFilterPanel: () => set((state) => ({
+    filterPanelOpen: !state.filterPanelOpen,
+    exportMenuOpen: false,
+  })),
+
+  toggleExportMenu: () => set((state) => ({
+    exportMenuOpen: !state.exportMenuOpen,
+    filterPanelOpen: false,
+  })),
+
+  togglePathFinder: () => set((state) => ({
+    pathFinderOpen: !state.pathFinderOpen,
+  })),
+
+  setReactFlowInstance: (instance) => set({ reactFlowInstance: instance }),
+
+  setFilters: (newFilters) => set((state) => ({
+    filters: { ...state.filters, ...newFilters },
+  })),
+
+  resetFilters: () => set({
+    filters: {
+      nodeTypes: new Set<NodeType>(["file", "function", "class", "module", "concept"]),
+      complexities: new Set<Complexity>(["simple", "moderate", "complex"]),
+      layerIds: new Set<string>(),
+      edgeCategories: new Set<EdgeCategory>(["structural", "behavioral", "data-flow", "dependencies", "semantic"]),
+    },
+  }),
+
+  hasActiveFilters: () => {
+    const { filters } = get();
+    const allNodeTypes = new Set<NodeType>(["file", "function", "class", "module", "concept"]);
+    const allComplexities = new Set<Complexity>(["simple", "moderate", "complex"]);
+    const allEdgeCategories = new Set<EdgeCategory>(["structural", "behavioral", "data-flow", "dependencies", "semantic"]);
+
+    const hasNodeTypeFilter = filters.nodeTypes.size !== allNodeTypes.size;
+    const hasComplexityFilter = filters.complexities.size !== allComplexities.size;
+    const hasLayerFilter = filters.layerIds.size > 0;
+    const hasEdgeCategoryFilter = filters.edgeCategories.size !== allEdgeCategories.size;
+
+    return hasNodeTypeFilter || hasComplexityFilter || hasLayerFilter || hasEdgeCategoryFilter;
+  },
 
   startTour: () => {
     const { graph } = get();

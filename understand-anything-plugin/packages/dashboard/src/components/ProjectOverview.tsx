@@ -21,6 +21,30 @@ export default function ProjectOverview() {
     typeCounts[node.type] = (typeCounts[node.type] ?? 0) + 1;
   }
 
+  // Count complexity
+  const complexityCounts: Record<string, number> = { simple: 0, moderate: 0, complex: 0 };
+  for (const node of nodes) {
+    if (node.complexity) {
+      complexityCounts[node.complexity] = (complexityCounts[node.complexity] ?? 0) + 1;
+    }
+  }
+
+  // Find top connected nodes
+  const nodeConnections = new Map<string, number>();
+  for (const edge of edges) {
+    nodeConnections.set(edge.source, (nodeConnections.get(edge.source) ?? 0) + 1);
+    nodeConnections.set(edge.target, (nodeConnections.get(edge.target) ?? 0) + 1);
+  }
+  const topNodes = Array.from(nodeConnections.entries())
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 5)
+    .map(([nodeId, count]) => {
+      const node = nodes.find((n) => n.id === nodeId);
+      return { id: nodeId, name: node?.name ?? nodeId, count };
+    });
+
+  const avgConnections = nodes.length > 0 ? (edges.length * 2 / nodes.length).toFixed(1) : "0";
+
   return (
     <div className="h-full w-full overflow-auto p-5 animate-fade-slide-in">
       {/* Project name */}
@@ -74,6 +98,82 @@ export default function ProjectOverview() {
           </div>
         </div>
       )}
+
+      {/* Node Type Breakdown */}
+      <div className="mb-5">
+        <h3 className="text-[11px] font-semibold text-gold uppercase tracking-wider mb-3">Node Type Distribution</h3>
+        <div className="space-y-2">
+          {Object.entries(typeCounts)
+            .sort((a, b) => b[1] - a[1])
+            .map(([type, count]) => {
+              const percentage = ((count / nodes.length) * 100).toFixed(0);
+              return (
+                <div key={type}>
+                  <div className="flex items-center justify-between text-xs mb-1">
+                    <span className="text-text-secondary capitalize">{type}</span>
+                    <span className="text-text-muted font-mono">{count} ({percentage}%)</span>
+                  </div>
+                  <div className="w-full h-1.5 bg-elevated rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-gold/50 rounded-full transition-all duration-500"
+                      style={{ width: `${percentage}%` }}
+                    />
+                  </div>
+                </div>
+              );
+            })}
+        </div>
+      </div>
+
+      {/* Complexity Breakdown */}
+      {Object.values(complexityCounts).some((c) => c > 0) && (
+        <div className="mb-5">
+          <h3 className="text-[11px] font-semibold text-gold uppercase tracking-wider mb-3">Complexity Distribution</h3>
+          <div className="grid grid-cols-3 gap-2">
+            <div className="bg-elevated rounded-lg p-2 border border-border-subtle text-center">
+              <div className="text-lg font-mono font-medium text-green-400">{complexityCounts.simple}</div>
+              <div className="text-[10px] text-text-muted uppercase tracking-wider mt-0.5">Simple</div>
+            </div>
+            <div className="bg-elevated rounded-lg p-2 border border-border-subtle text-center">
+              <div className="text-lg font-mono font-medium text-yellow-400">{complexityCounts.moderate}</div>
+              <div className="text-[10px] text-text-muted uppercase tracking-wider mt-0.5">Moderate</div>
+            </div>
+            <div className="bg-elevated rounded-lg p-2 border border-border-subtle text-center">
+              <div className="text-lg font-mono font-medium text-red-400">{complexityCounts.complex}</div>
+              <div className="text-[10px] text-text-muted uppercase tracking-wider mt-0.5">Complex</div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Top Connected Nodes */}
+      {topNodes.length > 0 && (
+        <div className="mb-5">
+          <h3 className="text-[11px] font-semibold text-gold uppercase tracking-wider mb-3">Most Connected Nodes</h3>
+          <div className="space-y-2">
+            {topNodes.map((node, idx) => (
+              <div
+                key={node.id}
+                className="flex items-center gap-2 text-xs bg-elevated rounded-lg p-2 border border-border-subtle"
+              >
+                <div className="w-5 h-5 shrink-0 rounded-full bg-gold/20 flex items-center justify-center text-[10px] font-bold text-gold">
+                  {idx + 1}
+                </div>
+                <span className="flex-1 text-text-primary truncate">{node.name}</span>
+                <span className="text-text-muted font-mono shrink-0">{node.count}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Average Connections */}
+      <div className="mb-5 bg-elevated rounded-lg p-3 border border-border-subtle">
+        <div className="flex items-center justify-between">
+          <span className="text-xs text-text-secondary">Avg Connections per Node</span>
+          <span className="text-lg font-mono font-medium text-gold">{avgConnections}</span>
+        </div>
+      </div>
 
       {/* Analyzed at */}
       <div className="text-[11px] text-text-muted mb-6">

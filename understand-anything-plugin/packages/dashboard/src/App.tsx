@@ -7,6 +7,9 @@ import SearchBar from "./components/SearchBar";
 import NodeInfo from "./components/NodeInfo";
 import LayerLegend from "./components/LayerLegend";
 import DiffToggle from "./components/DiffToggle";
+import FilterPanel from "./components/FilterPanel";
+import ExportMenu from "./components/ExportMenu";
+import PathFinderModal from "./components/PathFinderModal";
 import LearnPanel from "./components/LearnPanel";
 import PersonaSelector from "./components/PersonaSelector";
 import ProjectOverview from "./components/ProjectOverview";
@@ -23,6 +26,8 @@ function App() {
   const codeViewerOpen = useDashboardStore((s) => s.codeViewerOpen);
   const closeCodeViewer = useDashboardStore((s) => s.closeCodeViewer);
   const setDiffOverlay = useDashboardStore((s) => s.setDiffOverlay);
+  const pathFinderOpen = useDashboardStore((s) => s.pathFinderOpen);
+  const togglePathFinder = useDashboardStore((s) => s.togglePathFinder);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [showKeyboardHelp, setShowKeyboardHelp] = useState(false);
 
@@ -44,7 +49,13 @@ function App() {
         action: () => {
           // Read from store at invocation time to avoid stale closures
           const state = useDashboardStore.getState();
-          if (state.codeViewerOpen) {
+          if (state.pathFinderOpen) {
+            state.togglePathFinder();
+          } else if (state.filterPanelOpen) {
+            state.toggleFilterPanel();
+          } else if (state.exportMenuOpen) {
+            state.toggleExportMenu();
+          } else if (state.codeViewerOpen) {
             state.closeCodeViewer();
           } else if (state.selectedNodeId) {
             state.selectNode(null);
@@ -106,6 +117,33 @@ function App() {
         action: () => {
           const state = useDashboardStore.getState();
           state.toggleDiffMode();
+        },
+        category: "View",
+      },
+      {
+        key: "f",
+        description: "Toggle filter panel",
+        action: () => {
+          const state = useDashboardStore.getState();
+          state.toggleFilterPanel();
+        },
+        category: "View",
+      },
+      {
+        key: "e",
+        description: "Toggle export menu",
+        action: () => {
+          const state = useDashboardStore.getState();
+          state.toggleExportMenu();
+        },
+        category: "View",
+      },
+      {
+        key: "p",
+        description: "Open path finder",
+        action: () => {
+          const state = useDashboardStore.getState();
+          state.togglePathFinder();
         },
         category: "View",
       },
@@ -185,6 +223,28 @@ function App() {
         <div className="flex items-center gap-4">
           <DiffToggle />
           <LayerLegend />
+          <FilterPanel />
+          <ExportMenu />
+          <button
+            onClick={togglePathFinder}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm bg-elevated text-text-secondary hover:text-text-primary transition-colors"
+            title="Find path between nodes (P)"
+          >
+            <svg
+              className="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
+              />
+            </svg>
+            Path
+          </button>
           <button
             onClick={() => setShowKeyboardHelp(true)}
             className="text-text-muted hover:text-gold transition-colors"
@@ -259,6 +319,12 @@ function App() {
           onClose={() => setShowKeyboardHelp(false)}
         />
       )}
+
+      {/* Path Finder Modal */}
+      <PathFinderModal
+        isOpen={pathFinderOpen}
+        onClose={togglePathFinder}
+      />
     </div>
   );
 }

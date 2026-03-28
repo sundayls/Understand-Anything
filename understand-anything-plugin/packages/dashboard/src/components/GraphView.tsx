@@ -15,8 +15,11 @@ import "@xyflow/react/dist/style.css";
 
 import CustomNode from "./CustomNode";
 import type { CustomFlowNode } from "./CustomNode";
+import NodeTooltip from "./NodeTooltip";
 import { useDashboardStore } from "../store";
+import type { FilterState } from "../store";
 import { applyDagreLayout, applyDagreLayoutAsync, NODE_WIDTH, NODE_HEIGHT } from "../utils/layout";
+import { filterNodes, filterEdges } from "../utils/filters";
 
 const LAYER_PADDING = 40;
 
@@ -101,8 +104,10 @@ function buildTopologyData(
   changedNodeIds: Set<string>,
   affectedNodeIds: Set<string>,
   handleNodeSelect: (nodeId: string) => void,
+  filters: FilterState,
 ) {
-  const filteredGraphNodes =
+  // Step 1: Apply persona filtering
+  let filteredGraphNodes =
     persona === "non-technical"
       ? graph.nodes.filter(
           (n) =>
@@ -110,13 +115,24 @@ function buildTopologyData(
         )
       : graph.nodes;
 
+  // Step 2: Apply filter panel filters
+  filteredGraphNodes = filterNodes(filteredGraphNodes, graph.layers ?? [], filters);
+
   const filteredNodeIds = new Set(filteredGraphNodes.map((n) => n.id));
-  const filteredGraphEdges =
-    persona === "non-technical"
-      ? graph.edges.filter(
-          (e) => filteredNodeIds.has(e.source) && filteredNodeIds.has(e.target),
-        )
-      : graph.edges;
+
+  // Step 3: Filter edges based on visible nodes and edge categories
+  let filteredGraphEdges = graph.edges.filter(
+    (e) => filteredNodeIds.has(e.source) && filteredNodeIds.has(e.target),
+  );
+  filteredGraphEdges = filterEdges(filteredGraphEdges, filteredNodeIds, filters);
+
+  // Compute connection counts for each node
+  const incomingCounts = new Map<string, number>();
+  const outgoingCounts = new Map<string, number>();
+  for (const edge of filteredGraphEdges) {
+    outgoingCounts.set(edge.source, (outgoingCounts.get(edge.source) ?? 0) + 1);
+    incomingCounts.set(edge.target, (incomingCounts.get(edge.target) ?? 0) + 1);
+  }
 
   const flowNodes: CustomFlowNode[] = filteredGraphNodes.map((node) => ({
     id: node.id,
@@ -135,6 +151,9 @@ function buildTopologyData(
       isDiffAffected: diffMode && affectedNodeIds.has(node.id),
       isDiffFaded: diffMode && !changedNodeIds.has(node.id) && !affectedNodeIds.has(node.id),
       onNodeClick: handleNodeSelect,
+      incomingCount: incomingCounts.get(node.id) ?? 0,
+      outgoingCount: outgoingCounts.get(node.id) ?? 0,
+      tags: node.tags ?? [],
     },
   }));
 
@@ -309,6 +328,8 @@ function GraphViewInner() {
   const diffMode = useDashboardStore((s) => s.diffMode);
   const changedNodeIds = useDashboardStore((s) => s.changedNodeIds);
   const affectedNodeIds = useDashboardStore((s) => s.affectedNodeIds);
+  const filters = useDashboardStore((s) => s.filters);
+  const setReactFlowInstance = useDashboardStore((s) => s.setReactFlowInstance);
 
   const [layouting, setLayouting] = useState(false);
 
@@ -328,10 +349,10 @@ function GraphViewInner() {
     }
     const { flowNodes, flowEdges } = buildTopologyData(
       graph, persona, diffMode, changedNodeIds, affectedNodeIds,
-      handleNodeSelect,
+      handleNodeSelect, filters,
     );
     return { topoNodes: flowNodes, topoEdges: flowEdges, needsAsyncLayout: flowNodes.length > ASYNC_LAYOUT_THRESHOLD };
-  }, [graph, persona, handleNodeSelect, diffMode, changedNodeIds, affectedNodeIds]);
+  }, [graph, persona, handleNodeSelect, diffMode, changedNodeIds, affectedNodeIds, filters]);
 
   // ── Laid-out nodes from the last completed layout pass ──
   // Stored in a ref so layout results persist across visual-state changes.
@@ -443,6 +464,7 @@ function GraphViewInner() {
         onEdgesChange={onEdgesChange}
         onNodeClick={onNodeClick}
         onPaneClick={onPaneClick}
+        onInit={setReactFlowInstance}
         nodeTypes={nodeTypes}
         nodesDraggable={false}
         nodesConnectable={false}
@@ -465,6 +487,23 @@ function GraphViewInner() {
         <TourFitView />
         <SelectedNodeFitView />
       </ReactFlow>
+
+      {/* Node tooltips */}
+      {nodes
+        .filter((n) => n.type === "custom")
+        .map((node) => {
+          const data = node.data as CustomFlowNode["data"];
+          return (
+            <NodeTooltip
+              key={node.id}
+              nodeId={node.id}
+              data={data}
+              incomingCount={data.incomingCount ?? 0}
+              outgoingCount={data.outgoingCount ?? 0}
+              tags={data.tags}
+            />
+          );
+        })}
     </div>
   );
 }
