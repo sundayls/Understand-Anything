@@ -32,12 +32,14 @@ VALID_NODE_PREFIXES = {
     "file", "func", "function", "class", "module", "concept",
     "config", "document", "service", "table", "endpoint",
     "pipeline", "schema", "resource",
+    "domain", "flow", "step",
 }
 
 # node.type → canonical ID prefix
 TYPE_TO_PREFIX: dict[str, str] = {
     "file": "file",
     "function": "function",
+    "func": "function",
     "class": "class",
     "module": "module",
     "concept": "concept",
@@ -49,6 +51,9 @@ TYPE_TO_PREFIX: dict[str, str] = {
     "pipeline": "pipeline",
     "schema": "schema",
     "resource": "resource",
+    "domain": "domain",
+    "flow": "flow",
+    "step": "step",
 }
 
 COMPLEXITY_MAP: dict[str, str] = {
@@ -349,8 +354,13 @@ def main() -> None:
         print(f"Error: {intermediate_dir} does not exist", file=sys.stderr)
         sys.exit(1)
 
-    # Discover batch files
-    batch_files = sorted(intermediate_dir.glob("batch-*.json"))
+    # Discover batch files, sorted by numeric index (not lexicographic)
+    batch_files = sorted(
+        intermediate_dir.glob("batch-*.json"),
+        key=lambda p: int(re.search(r"batch-(\d+)", p.stem).group(1))
+        if re.search(r"batch-(\d+)", p.stem)
+        else 0,
+    )
     if not batch_files:
         print("Error: no batch-*.json files found in intermediate/", file=sys.stderr)
         sys.exit(1)

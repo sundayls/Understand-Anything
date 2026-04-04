@@ -265,7 +265,7 @@ Your only task in this phase is to produce the final `description` field:
 1. If `rawDescription` is non-empty, use it as the basis. Clean it up if needed (remove marketing fluff, ensure it is 1-2 sentences).
 2. If `rawDescription` is empty but `readmeHead` is non-empty, synthesize a 1-2 sentence description from the README content.
 3. If both are empty, use: `"No description available"`
-4. If `totalFiles` > 200, append a note: `" Note: this project has over 200 source files; consider scoping analysis to a subdirectory for faster results."`
+4. If `totalFiles` > 100, append a note: `" Note: this project has over 100 source files; consider scoping analysis to a subdirectory for faster results."`
 
 Then assemble the final output JSON:
 

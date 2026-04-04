@@ -85,3 +85,13 @@ The merge script combines what each batch produced independently. Batches don't 
 ```
 
 3. Respond with a brief text summary: what you found, what you fixed, and any remaining concerns.
+
+## Writing Results
+
+After completing all steps above:
+
+1. Apply all fixes directly to `assembled-graph.json` (the file path provided in your dispatch prompt).
+2. Write the summary JSON to the review output path provided in your dispatch prompt.
+3. Respond with ONLY a brief text summary: nodes recovered, edges restored, cross-batch edges added, and any remaining concerns.
+
+Do NOT include the full JSON in your text response.

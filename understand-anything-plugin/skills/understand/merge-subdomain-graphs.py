@@ -116,15 +116,26 @@ def merge_graphs(graphs: list[dict[str, Any]]) -> tuple[dict[str, Any], list[str
         if diff:
             dropped_layer_refs += diff
 
-    # ── Tour: concatenate, re-number order ────────────────────────────
+    # ── Tour: concatenate, merge steps with same title ─────────────────
     all_tour_steps: list[dict] = []
-    seen_titles: set[str] = set()
+    title_to_step: dict[str, dict] = {}
     for g in graphs:
         for step in g.get("tour", []):
             title = step.get("title", "")
-            if title not in seen_titles:
-                seen_titles.add(title)
-                all_tour_steps.append({**step})
+            if title in title_to_step:
+                # Merge nodeIds from duplicate-titled steps (e.g. both
+                # subdomains produce a "Project Overview" step 1)
+                existing = title_to_step[title]
+                for nid in step.get("nodeIds", []):
+                    if nid not in existing.get("nodeIds", []):
+                        existing.setdefault("nodeIds", []).append(nid)
+                # Keep the longer description
+                if len(step.get("description", "")) > len(existing.get("description", "")):
+                    existing["description"] = step["description"]
+            else:
+                new_step = {**step}
+                title_to_step[title] = new_step
+                all_tour_steps.append(new_step)
 
     # Drop dangling tour nodeIds and re-number
     dropped_tour_refs = 0

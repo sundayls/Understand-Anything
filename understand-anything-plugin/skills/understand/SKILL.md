@@ -39,9 +39,9 @@ Determine whether to run a full analysis or incremental update.
    - These flags only set the config — analysis proceeds normally regardless.
 
 4. **Check for subdomain knowledge graphs to merge:**
-   List all `*knowledge-graph*.json` files in `$PROJECT_ROOT/.understand-anything/` **excluding** `knowledge-graph.json` itself (e.g. `frontend-knowledge-graph.json`, `backend-knowledge-graph.json`). If any subdomain graphs exist, run the merge script bundled with this skill:
+   List all `*knowledge-graph*.json` files in `$PROJECT_ROOT/.understand-anything/` **excluding** `knowledge-graph.json` itself (e.g. `frontend-knowledge-graph.json`, `backend-knowledge-graph.json`). If any subdomain graphs exist, run the merge script bundled with this skill (located next to this SKILL.md file — use the skill directory path, not the project root):
    ```bash
-   python ./merge-subdomain-graphs.py $PROJECT_ROOT
+   python <SKILL_DIR>/merge-subdomain-graphs.py $PROJECT_ROOT
    ```
    The script discovers subdomain graphs, loads the existing `knowledge-graph.json` as a base (if present), and merges everything into `knowledge-graph.json` (deduplicating nodes and edges). Report the merge summary to the user, then continue with the merged graph.
 
@@ -164,9 +164,9 @@ Fill in batch-specific parameters below and dispatch:
 > 2. `<path>` (<sizeLines> lines, fileCategory: `<fileCategory>`)
 > ...
 
-After ALL batches complete, run the merge-and-normalize script bundled with this skill:
+After ALL batches complete, run the merge-and-normalize script bundled with this skill (located next to this SKILL.md file — use the skill directory path, not the project root):
 ```bash
-python ./merge-batch-graphs.py $PROJECT_ROOT
+python <SKILL_DIR>/merge-batch-graphs.py $PROJECT_ROOT
 ```
 
 This script reads all `batch-*.json` files from `$PROJECT_ROOT/.understand-anything/intermediate/`, then in one pass:
@@ -192,7 +192,7 @@ After batches complete:
 3. Write the pruned existing nodes/edges as `batch-existing.json` in the intermediate directory
 4. Run the same merge script — it will combine `batch-existing.json` with the fresh `batch-*.json` files:
    ```bash
-   python ./merge-batch-graphs.py $PROJECT_ROOT
+   python <SKILL_DIR>/merge-batch-graphs.py $PROJECT_ROOT
    ```
 
 ---
