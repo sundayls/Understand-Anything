@@ -328,14 +328,15 @@ export class GraphBuilder {
         console.warn(`[GraphBuilder] Duplicate node ID "${childId}" — skipping`);
         continue;
       }
+      const name = `${ep.method ?? ""} ${ep.path}`.trim()
       this.nodeIds.add(childId);
       this.nodes.push({
         id: childId,
         type: "endpoint",
-        name: `${ep.method ?? ""} ${ep.path}`.trim(),
+        name,
         filePath,
         lineRange: ep.lineRange,
-        summary: `Endpoint: ${ep.method ?? ""} ${ep.path}`.trim(),
+        summary: `Endpoint: ${name}`,
         tags: [],
         complexity: meta.complexity,
       });
