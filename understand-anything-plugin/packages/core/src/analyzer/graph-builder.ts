@@ -127,6 +127,7 @@ export class GraphBuilder {
   private readonly edges: GraphEdge[] = [];
   private readonly languages = new Set<string>();
   private readonly nodeIds = new Set<string>();
+  private readonly edgeKeys = new Set<string>();
   private readonly projectName: string;
   private readonly gitHash: string;
 
@@ -235,6 +236,9 @@ export class GraphBuilder {
   }
 
   addImportEdge(fromFile: string, toFile: string): void {
+    const key = `imports|file:${fromFile}|file:${toFile}`;
+    if (this.edgeKeys.has(key)) return;
+    this.edgeKeys.add(key);
     this.edges.push({
       source: `file:${fromFile}`,
       target: `file:${toFile}`,
@@ -250,6 +254,9 @@ export class GraphBuilder {
     calleeFile: string,
     calleeFunc: string,
   ): void {
+    const key = `calls|function:${callerFile}:${callerFunc}|function:${calleeFile}:${calleeFunc}`;
+    if (this.edgeKeys.has(key)) return;
+    this.edgeKeys.add(key);
     this.edges.push({
       source: `function:${callerFile}:${callerFunc}`,
       target: `function:${calleeFile}:${calleeFunc}`,
