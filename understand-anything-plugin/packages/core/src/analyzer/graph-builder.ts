@@ -136,7 +136,7 @@ export class GraphBuilder {
   }
 
   private static basename(filePath: string): string {
-    return GraphBuilder.basename(filePath);
+    return filePath.split("/").pop() ?? filePath;
   }
 
   addFile(filePath: string, meta: FileMeta): void {
@@ -259,7 +259,7 @@ export class GraphBuilder {
     });
   }
 
-  addNonCodeFile(filePath: string, meta: NonCodeFileMeta): void {
+  addNonCodeFile(filePath: string, meta: NonCodeFileMeta): string {
     const lang = detectLanguage(filePath);
     if (lang !== "unknown") this.languages.add(lang);
     const name = GraphBuilder.basename(filePath);
@@ -274,11 +274,11 @@ export class GraphBuilder {
       tags: meta.tags,
       complexity: meta.complexity,
     });
+    return id;
   }
 
   addNonCodeFileWithAnalysis(filePath: string, meta: NonCodeFileAnalysisMeta): void {
-    this.addNonCodeFile(filePath, meta);
-    const fileId = `${meta.nodeType ?? "file"}:${filePath}`;
+    const fileId = this.addNonCodeFile(filePath, meta);
 
     // Create child nodes for definitions (tables, schemas, etc.)
     for (const def of meta.definitions ?? []) {
